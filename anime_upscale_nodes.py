@@ -5,6 +5,7 @@ from contextlib import nullcontext
 from typing import Dict, Tuple
 
 import torch
+from comfy import model_management, model_patcher
 
 try:
     import folder_paths
@@ -51,6 +52,11 @@ _WEIGHTS_CONFIG_MAP = {
 class AnimeUpscaleModel:
     def __init__(self, model, scale: int, amp_mode: str, config_path: str, weights_path: str):
         self.model = model
+        self.patcher = model_patcher.CoreModelPatcher(
+            model,
+            load_device=model_management.get_torch_device(),
+            offload_device=model_management.unet_offload_device(),
+        )
         self.scale = int(scale)
         self.amp_mode = amp_mode
         self.config_path = config_path

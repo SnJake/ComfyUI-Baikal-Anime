@@ -1,7 +1,7 @@
 [project]
 name = "snjake_baikal_swin_anime"
 description = "SnJake Baikal-Swin-Anime x2 is a custom ComfyUI node for upscaling anime/illustration images with a dedicated restoration model."
-version = "1.0.1"
+version = "1.0.2"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
 classifiers = [
