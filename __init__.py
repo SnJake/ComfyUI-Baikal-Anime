@@ -1,13 +1,12 @@
-from .anime_upscale_nodes import SnJakeAnimeUpscaleCheckpointLoader, SnJakeAnimeUpscaleInference
+from .baikal.nodes import BaikalModelLoader, BaikalUpscale
 
+# Stable internal IDs keep saved workflows loadable after the rebrand.
 NODE_CLASS_MAPPINGS = {
-    "SnJakeAnimeUpscaleCheckpointLoader": SnJakeAnimeUpscaleCheckpointLoader,
-    "SnJakeAnimeUpscaleInference": SnJakeAnimeUpscaleInference,
+    "SnJakeAnimeUpscaleCheckpointLoader": BaikalModelLoader,
+    "SnJakeAnimeUpscaleInference": BaikalUpscale,
 }
-
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "SnJakeAnimeUpscaleCheckpointLoader": "\U0001F60E Anime Upscale Loader",
-    "SnJakeAnimeUpscaleInference": "\U0001F60E Anime Upscale",
+    "SnJakeAnimeUpscaleCheckpointLoader": "Baikal Model Loader",
+    "SnJakeAnimeUpscaleInference": "Baikal Anime Upscale",
 }
-
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]

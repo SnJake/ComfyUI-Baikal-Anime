@@ -1,0 +1,30 @@
+{
+  "scale": 2,
+  "model": {
+    "type": "swinfir",
+    "in_channels": 3,
+    "embed_dim": 96,
+    "depths": [
+      6,
+      6,
+      6,
+      6
+    ],
+    "num_heads": [
+      6,
+      6,
+      6,
+      6
+    ],
+    "window_size": 8,
+    "mlp_ratio": 4.0,
+    "qkv_bias": true,
+    "drop_rate": 0.0,
+    "attn_drop_rate": 0.0,
+    "drop_path_rate": 0.1,
+    "patch_norm": true,
+    "img_range": 1.0,
+    "upsampler": "pixelshuffle",
+    "resi_connection": "SFB"
+  }
+}
