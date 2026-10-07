@@ -2,6 +2,7 @@ import math
 import torch
 from comfy import model_management, utils
 from .catalog import MODELS
+from .devices import resolve_device
 from .loading import load_model, model_directory
 from .tiling import starts, upscale
 from .wrapper import autocast_context
@@ -55,9 +56,7 @@ class BaikalUpscale:
         wrapper = upscale_model_custom
         if wrapper.kind == "loopsr" and not 1 <= loops <= wrapper.model.loops:
             raise ValueError("Loop depth outside the trained range")
-        target = model_management.get_torch_device() if device == "auto" else torch.device(device)
-        if target.type == "cuda" and not torch.cuda.is_available():
-            raise RuntimeError("CUDA unavailable; choose CPU")
+        target = resolve_device(model_management.get_torch_device() if device == "auto" else device)
         results, current_tile = [], int(tile)
         for item in image:
             while True:

@@ -2,6 +2,7 @@ from contextlib import nullcontext
 
 import torch
 from comfy import model_management, model_patcher
+from .devices import resolve_device
 
 
 def autocast_context(device, mode):
@@ -24,14 +25,17 @@ class BaikalModel:
         self.scale = int(model.scale if kind == "loopsr" else 2)
         self.window = int(model.window if kind == "loopsr" else model.window_size)
         self.patcher = self._patcher(model_management.get_torch_device())
+        self._patchers = {self.patcher.load_device: self.patcher}
 
     def _patcher(self, device):
-        return model_patcher.CoreModelPatcher(self.model, load_device=device,
+        return model_patcher.CoreModelPatcher(self.model, load_device=resolve_device(device),
                                              offload_device=model_management.unet_offload_device())
 
     def prepare(self, device, patch_pixels):
+        device = resolve_device(device)
         if self.patcher.load_device != device:
-            self.patcher = self._patcher(device)
+            self.patcher = self._patchers.get(device) or self._patcher(device)
+            self._patchers[device] = self.patcher
         dim = self.model.stem.out_channels if self.kind == "loopsr" else self.model.conv_first.out_channels
         model_management.load_models_gpu([self.patcher], memory_required=patch_pixels * dim * 4 * 24,
                                          force_full_load=True)
