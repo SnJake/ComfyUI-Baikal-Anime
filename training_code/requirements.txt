@@ -1,10 +1,8 @@
-torch>=2.9.1
-torchvision>=0.24.1
-numpy>=1.23
-Pillow>=10.0.0
-PyYAML>=6.0
-tqdm>=4.66
-dists-pytorch>=0.1.1
-timm
-triton # or triton-windows
-
+torch>=2.6,<3
+numpy>=1.24,<3
+Pillow>=10,<13
+PyYAML>=6,<7
+tqdm>=4.66,<5
+# Tested on Python 3.10, torch 2.12.1+cu130, RTX 4070 Ti SUPER.
+# Install a CUDA-enabled PyTorch separately if creating a new environment.
+# No torchvision/timm/ComfyUI/perceptual-model downloads are required.

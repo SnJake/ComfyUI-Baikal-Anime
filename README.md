@@ -1,133 +1,57 @@
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)
-![Made for ComfyUI](https://img.shields.io/badge/Made%20for-ComfyUI-blueviolet)
+# Baikal Anime Upscaler
 
-SnJake Baikal-Swin-Anime x2 is a custom ComfyUI node for upscaling anime/illustration images with a dedicated restoration model. Model in **experimental** state; V2 is slightly sharper and removes edge noise artifacts.
+**x2 upscaling for anime and illustrations**, with Baikal LoopSR and SwinFIR v31.
 
----
+[Download models](https://huggingface.co/SnJake/Baikal-Anime-Upscaler/tree/dev) · [Example workflow](workflows/Baikal_LoopSR_x2.json)
 
-# Examples
-<img width="4096" height="2048" alt="Example_3" src="https://github.com/user-attachments/assets/12e77d78-acee-4bff-9ccb-e82fc92bf23e" />
-<img width="4096" height="2048" alt="Example_2" src="https://github.com/user-attachments/assets/2382d7bf-bdfd-4f40-abd6-834238c825aa" />
-<img width="4096" height="2048" alt="Example_1" src="https://github.com/user-attachments/assets/a80bcb47-8568-4365-a6da-2bbd303c6f59" />
+## Examples
 
+**Bicubic x2 → Baikal LoopSR x2.** Same display size, no additional sharpening. LoopSR: EMA step 24000, loops 4.
 
----
+![Illustration before and after](examples/illustration-overview.webp)
 
-# Installation
+![Illustration details](examples/illustration-details.png)
 
-The installation consists of two steps: installing the node and making the weights available.
+![Anime before and after](examples/anime-overview.webp)
 
-## Step 1: Install the Node
+![Anime details](examples/anime-details.png)
 
-1. Open a terminal or command prompt.
-2. Navigate to your ComfyUI `custom_nodes` directory.
-   ```bash
-   # Example for Windows
-   cd D:\ComfyUI\custom_nodes\
+Full-resolution inputs/results: [Hugging Face examples](https://huggingface.co/SnJake/Baikal-Anime-Upscaler/tree/dev/examples).
 
-   # Example for Linux
-   cd ~/ComfyUI/custom_nodes/
-   ```
-3. Clone this repository:
-   ```bash
-   git clone https://github.com/SnJake/SnJake_Baikal_Swin_Anime.git
-   ```
-4. For standard ComfyUI installations (with venv):
-    1. Make sure your ComfyUI virtual environment (`venv`) is activated.
-    2. Navigate into the new node directory and install the requirements:
-       ```bash
-       cd SnJake_Baikal_Swin_Anime
-       pip install -r requirements.txt
-       ```
-   For Portable ComfyUI installations:
-    1. Navigate back to the **root** of your portable ComfyUI directory (e.g., `D:\ComfyUI_windows_portable`).
-    2. Run the following command to use the embedded Python to install the requirements. *Do not activate any venv.*
-       ```bash
-       python_embeded\python.exe -m pip install -r ComfyUI\custom_nodes\SnJake_Baikal_Swin_Anime\requirements.txt
-       ```
+## Installation
 
-## Step 2: Model Weights
+Clone into `ComfyUI/custom_nodes`, install requirements with ComfyUI's Python, then restart:
 
-On first use the node can automatically download weights from the repository.
+```bash
+git clone --branch dev https://github.com/SnJake/ComfyUI-Baikal-Anime.git
+python -m pip install -r ComfyUI-Baikal-Anime/requirements.txt
+```
 
-- Default weights location: `ComfyUI/models/anime_upscale/`
+For Windows portable, from its root:
 
-If you want to download manually:
-1. Download the weights from [HF REPO](https://huggingface.co/SnJake/Baikal-Swin-Anime).
-2. Place the file(s) into `ComfyUI/models/anime_upscale/`.
+```powershell
+python_embeded\python.exe -m pip install -r ComfyUI\custom_nodes\ComfyUI-Baikal-Anime\requirements.txt
+```
 
-## Step 3: Restart
+Use one checkout; update the existing installation instead of installing a duplicate. Place weights in **`ComfyUI/models/anime_upscale/`** or let the loader download them.
 
-Restart ComfyUI completely. The node will appear under **`😎 SnJake/Upscale`**.
+## Usage
 
----
+Category **`Baikal/Upscale`**: **Baikal Model Loader → Baikal Anime Upscale → Save Image**.
 
-# Usage
+| Model | File |
+|---|---|
+| Baikal LoopSR x2 | `Baikal_LoopSR_x2.safetensors` |
+| Baikal SwinFIR v31 | `Baikal_SwinFIR_Anime_x2_v31.safetensors` |
 
-The node menu path is **`😎 SnJake/Upscale`**.
+LoopSR supports **loops 1–4**. Default tiling: **256 / overlap 32 / halo 96** in LR pixels; `tile: 0` attempts a whole-image forward. Precision: auto/BF16/FP16/none, CPU or CUDA. The loader's `UPSCALE_MODEL` output also works with the standard image-upscaling node.
 
-## Inputs
+Standalone LoopSR:
 
-- `weights_name`: Select weights from the dropdown (auto-download if missing).
-- `image`: Source image.
-- `tile`: Tile size for large images. Recommended 256-512. Set 0 to disable tiling.
-- `overlap`: Tile overlap for smooth blending. Recommended 32-64.
-- `amp`: Precision (`auto`, `bf16`, `fp16`, `none`).
-- `device`: Device (`auto`, `cuda`, `cpu`).
+```bash
+python tools/infer.py --weights Baikal_LoopSR_x2.safetensors --input input.png --output output.png
+```
 
-## Outputs
+LoopSR adapts shared loops, XSA and deep supervision from [Looped Diffusion Transformer](https://arxiv.org/abs/2609.40305). [Technical notes](docs/TRAINING.md).
 
-- `image`: Upscaled image.
-
----
-
-# Training Details
-V1:
-- Dataset: 40,000 images from Danbooru2024: https://huggingface.co/datasets/deepghs/danbooru2024
-- Validation: 600 images
-- Epochs: 70
-
-V2: 
-- Slightly sharper output, no edge noise artifacts.
-- Epochs: 20
-- Dataset: 49,606 images from Danbooru2024: https://huggingface.co/datasets/deepghs/danbooru2024
-- Perceptual backbone: Custom SimSiam pre-trained convnextv2_tiny (Experimental)
-- Loss schedule: gradual ramp‑in of perceptual/auxiliary losses for stable training.
-
-V2.1:
-- Removed Nearest from resample_methods
-- Epochs: 30
-
-V2.2:
-- Epochs: 40 (For now)
-
-V3 (SwinFIR):
-- Epochs: Stage 1 - 20; Stage 2 - 18
-- Perceptual backbone: Custom SimSiam pre-trained convnextv2_base (Experimental).
-- Dataset: ~50,000 images from [Danbooru2024](https://huggingface.co/datasets/deepghs/danbooru2024)
-
-V3.1 (Current Best - SwinFIR): 🏆
-- Epochs: Stage 1 (Charbonnier) - 20; Stage 2 (GAN Fine-tuning) - 16.
-- Perceptual backbone: Reverted to the robust ImageNet-pretrained convnextv2_base.fcmae_ft_in22k_in1k for superior high-frequency feature extraction.
-- Dataset: ~50,000 images from [Danbooru2024](https://huggingface.co/datasets/deepghs/danbooru2024)
-
-Training code is included in `training_code/` for reference.
-
----
-
-# Disclaimer
-
-This project was made purely for curiosity and personal interest. The code was written by GPT-5.2 Codex.
-
----
-
-# License
-
-MIT. See `LICENSE.md`.
-
-
-
-
-
-
+MIT · [License](LICENSE.md)

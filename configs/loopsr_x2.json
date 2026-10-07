@@ -1,0 +1,13 @@
+{
+  "scale": 2,
+  "dim": 192,
+  "heads": 6,
+  "window": 8,
+  "pre_blocks": 2,
+  "loop_blocks": 4,
+  "post_blocks": 2,
+  "loops": 4,
+  "ffn_ratio": 2.0,
+  "attention": "xsa",
+  "checkpoint_blocks": false
+}

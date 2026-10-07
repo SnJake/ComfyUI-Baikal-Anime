@@ -1,27 +1,21 @@
 [project]
+# Immutable Comfy Registry identity; public branding and repository have changed.
 name = "snjake_baikal_swin_anime"
-description = "SnJake Baikal-Swin-Anime x2 is a custom ComfyUI node for upscaling anime/illustration images with a dedicated restoration model."
-version = "1.0.2"
-license = { file = "LICENSE" }
+description = "Baikal anime and illustration upscalers for ComfyUI: LoopSR x2 and SwinFIR v31."
+version = "2.0.0"
+license = { file = "LICENSE.md" }
 requires-python = ">=3.10"
-classifiers = [
-    "Operating System :: POSIX :: Linux",
-    "Operating System :: Microsoft :: Windows",
-    "Environment :: GPU :: NVIDIA CUDA",
-]
-
-dependencies = ["huggingface_hub"]
+dependencies = ["huggingface_hub>=0.26", "safetensors>=0.4"]
+classifiers = ["Operating System :: POSIX :: Linux", "Operating System :: Microsoft :: Windows", "Environment :: GPU :: NVIDIA CUDA"]
 
 [project.urls]
-Repository = "https://github.com/SnJake/SnJake_Baikal_Swin_Anime"
-#  Used by Comfy Registry https://registry.comfy.org
-Documentation = "https://github.com/SnJake/SnJake_Baikal_Swin_Anime/wiki"
-"Bug Tracker" = "https://github.com/SnJake/SnJake_Baikal_Swin_Anime/issues"
+Repository = "https://github.com/SnJake/ComfyUI-Baikal-Anime"
+Documentation = "https://github.com/SnJake/ComfyUI-Baikal-Anime#readme"
+"Bug Tracker" = "https://github.com/SnJake/ComfyUI-Baikal-Anime/issues"
 
 [tool.comfy]
 PublisherId = "snjake"
-DisplayName = "SnJake_Baikal_Swin_Anime"
+DisplayName = "Baikal Anime Upscaler"
 Icon = ""
-includes = [] 
-"requires-comfyui" = ">=1.0.0"  # ComfyUI version compatibility
-
+includes = []
+"requires-comfyui" = ">=1.0.0"

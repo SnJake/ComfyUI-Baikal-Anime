@@ -1,0 +1,74 @@
+{
+  "model": "Baikal_LoopSR_x2.safetensors",
+  "weights": "EMA",
+  "training_steps": 24000,
+  "baseline": "bicubic x2, not an HR reference",
+  "examples": [
+    {
+      "id": "illustration",
+      "source_size": [
+        1536,
+        2048
+      ],
+      "result_size": [
+        3072,
+        4096
+      ],
+      "crops_lr": [
+        [
+          688,
+          330,
+          160,
+          160
+        ],
+        [
+          688,
+          944,
+          160,
+          160
+        ]
+      ],
+      "settings": {
+        "loops": 4,
+        "tile_lr": 384,
+        "halo_lr": 160,
+        "overlap_lr": 32,
+        "precision": "bf16",
+        "extra_sharpening": false
+      }
+    },
+    {
+      "id": "anime",
+      "source_size": [
+        1248,
+        1824
+      ],
+      "result_size": [
+        2496,
+        3648
+      ],
+      "crops_lr": [
+        [
+          544,
+          285,
+          160,
+          160
+        ],
+        [
+          544,
+          832,
+          160,
+          160
+        ]
+      ],
+      "settings": {
+        "loops": 4,
+        "tile_lr": 384,
+        "halo_lr": 160,
+        "overlap_lr": 32,
+        "precision": "bf16",
+        "extra_sharpening": false
+      }
+    }
+  ]
+}
