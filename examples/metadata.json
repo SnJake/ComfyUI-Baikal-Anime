@@ -1,7 +1,7 @@
 {
-  "model": "Baikal_LoopSR_x2.safetensors",
+  "model": "Baikal_LoopSR_x2_v2.safetensors",
   "weights": "EMA",
-  "training_steps": 24000,
+  "training_steps": 30000,
   "baseline": "bicubic x2, not an HR reference",
   "examples": [
     {

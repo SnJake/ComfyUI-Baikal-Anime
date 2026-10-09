@@ -1,38 +1,49 @@
 # Training record
 
-The released `Baikal_LoopSR_x2.safetensors` contains **EMA-only weights from update 24000**. Optimizer, scaler, RNG, file paths and dataset manifest are not embedded or distributed. Its safetensors metadata records architecture, model config, step, weight type and license.
+Released files contain EMA-only weights. The architecture and training step are recorded in safetensors metadata.
 
-Architecture: LR RGB input, bicubic residual, width 192, 6 heads (32/head), 8-pixel attention windows, 2 pre blocks, 4 shared middle blocks repeated 4 times, 2 post blocks. Unique parameters: 3,499,324. Final inference applies 20 blocks; training with all exits applies 26. XSA runs after SDPA and before head concatenation/output projection only in the shared stage. Normalization/projection arithmetic stays FP32 under autocast. Dense LR features and convolutional gated FFNs are restoration-specific choices.
+| Model | EMA update | Parameters | Width / heads | Pre / shared / post blocks |
+|---|---:|---:|---|---|
+| LoopSR v2 | 30000 | 5,234,987 | 224 / 7 | 3 / 4 / 2 |
+| LoopSR v1 | 24000 | 3,499,324 | 192 / 6 | 2 / 4 / 2 |
 
-Source: [Looped Diffusion Transformer](https://arxiv.org/abs/2609.40305), [official Looped-DiT code](https://github.com/OpenSenseNova/Looped-DiT). Shared computation, XSA and final+mean deep supervision are adapted; the diffusion sampler, text encoder, flow objective and original benchmark claims are not reproduced.
+Both models use LR RGB input, a bicubic residual, 8-pixel attention windows and four passes through one shared middle stage. XSA is applied only in the shared stage, after SDPA and before head concatenation. Inference can exit at loops 1–4. V2 was trained from scratch.
 
-## Data and degradation
+Idea: [Looped Diffusion Transformer](https://arxiv.org/abs/2609.40305), [official code](https://github.com/OpenSenseNova/Looped-DiT). Shared computation, XSA and deep supervision are adapted for direct RGB restoration.
 
-- 42,748 usable HR images, 41,893 training / 855 held-out, 30,756 source groups.
-- Mostly anime and illustrations; a small rendered/3D fraction, exact percentage unknown.
-- Training and validation use a source-group split.
-- 128 validation images are fixed crops, representing 99 groups; the complete holdout is larger.
-- Crops 192 HR / 96 LR; flips/rotations; clean bicubic pairs mixed with blur, resampling, mild Gaussian noise and JPEG on LR only. Targets are not automatically blurred/denoised.
+## Data and optimization
 
-## Optimization
+42,748 usable HR images: 41,893 training / 855 held-out. Mostly anime and illustrations, with a small 3D/rendered fraction. Source groups are kept separate between training and validation. HR crops are 192 pixels; LR crops are 96. Training combines clean bicubic pairs and mild LR blur, resampling, noise and JPEG degradation.
 
-AdamW: LR 2e-4, betas (0.9,0.99), weight decay 1e-4; warmup 2000, cosine schedule configured to 150000 updates, floor 2e-6; gradient clipping 1.0; EMA 0.999. Physical batch 4 and accumulation 4, effective batch 16 (the first short run used 8 x 2). BF16 on RTX 4070 Ti SUPER 16 GB; torch.compile enabled later. This artifact was exported after 24000 updates, not after the planned 150000 schedule.
+AdamW: LR 2e-4, minimum 2e-6, warmup 2000 updates, betas (0.9, 0.99), weight decay 1e-4, gradient clipping 1.0. Physical batch 4, accumulation 4, effective batch 16. EMA 0.999, BF16, torch.compile, RTX 4070 Ti SUPER 16 GB. The cosine schedule is configured for 40000 updates in v2 and 150000 in v1; exported weights come from the updates listed above.
 
-| Loss | Weight |
-|---|---:|
-| Charbonnier RGB, epsilon 0.001 | 1.0 |
-| Signed luminance gradients | 0.15 |
-| High-pass prediction-minus-target error | 0.05 |
-| Low-frequency RGB color | 0.10 |
-| Per-image HR-flat-mask high-pass error | 0.08 |
+| Loss | v1 | v2 |
+|---|---:|---:|
+| Charbonnier RGB, epsilon 0.001 | 1.0 | 1.0 |
+| Signed luminance gradients | 0.15, scale 1× | 0.20, scales 1× and ½× |
+| High-pass prediction-minus-target error | 0.05 | 0.06 |
+| Low-frequency RGB color | 0.10 | 0.10 |
+| Per-image flat-region high-pass error | 0.08 | 0.08 |
 
-The total uses final exit + mean of earlier exits. No perceptual/VGG, adversarial/GAN or FFT-magnitude term. Flat masking uses HR only with nearby contours excluded; normalization is per image so microbatch partitions do not reweight images. Correct HR detail is not penalized, but grain in HR can still be learned.
+V2's half-resolution edge term uses a 2×2 averaging filter before downsampling. Gradients are normalized to HR pixel spacing, then the two scales are averaged. Deep supervision is final exit + mean of earlier exits. Neither version uses VGG/perceptual, GAN or FFT-magnitude loss.
 
-## Recorded validation, update 24000
+## Recorded validation
 
-| Mode | RGB PSNR | RGB SSIM | Flat HF error | Edge MAE |
-|---|---:|---:|---:|---:|
-| Clean synthetic LR | 42.479919 | 0.984089 | 0.001015807 | 0.006450925 |
-| Degraded synthetic LR | 40.162320 | 0.976099 | 0.001075730 | 0.007436493 |
+EMA loop 4 on the same 128 fixed held-out crops per mode, with a 2-pixel HR border. PSNR averages per-image scores. These synthetic-pair measurements are separate from the visual examples.
 
-EMA loop 4, 128 fixed center crops, 2 HR-pixel border. PSNR averages per-image scores; SSIM uses a Gaussian window. These scores do not apply to the visual examples, which have no true HR reference. They do not establish superiority over other upscalers.
+| Model | Mode | RGB PSNR | RGB SSIM | Edge MAE | Flat HF error |
+|---|---|---:|---:|---:|---:|
+| v1 | clean | 42.479919 | 0.984089 | 0.006450925 | 0.001015807 |
+| v1 | degraded | 40.162320 | 0.976099 | 0.007436493 | 0.001075730 |
+| v2 | clean | 42.789825 | 0.984565 | 0.006278376 | 0.001009161 |
+| v2 | degraded | 40.429077 | 0.977069 | 0.007247928 | 0.001069068 |
+
+## Training reference
+
+Install `training_code/requirements.txt`, configure your dataset root and manifest, then from `training_code`:
+
+```bash
+python -m loop_sr.train --config configs/loop_sr_x2_v2.yaml
+```
+
+The v1 config remains available as `configs/loop_sr_x2.yaml`. For EMA export, run `tools/export_model.py` from the repository root with `--checkpoint`, `--output` and optional `--model-version`.

@@ -18,6 +18,24 @@ def gradients(x):
     return x[..., 1:] - x[..., :-1], x[..., 1:, :] - x[..., :-1, :]
 
 
+def multiscale_edge_loss(prediction, target, scales):
+    """Average signed luminance-gradient errors at the original HR pixel spacing."""
+    prediction, target = luminance(prediction), luminance(target)
+    levels = []
+    for scale in scales:
+        if scale == 0.5:
+            # A 2x2 box filter before decimation; ceil mode also handles odd sizes.
+            p = F.avg_pool2d(prediction, 2, stride=2, ceil_mode=True)
+            t = F.avg_pool2d(target, 2, stride=2, ceil_mode=True)
+        else:
+            p, t = prediction, target
+        errors = [(a - b).abs().mean() for a, b in zip(gradients(p), gradients(t)) if a.numel()]
+        edge = torch.stack(errors).mean() if errors else p.sum() * 0
+        # Half-resolution differences span two HR pixels: normalize their spacing.
+        levels.append(edge * scale)
+    return torch.stack(levels).mean()
+
+
 def flat_mask(target, threshold=0.015):
     """Ground-truth-only mask, with a 5x5 exclusion around strong contours."""
     gray = luminance(target)
@@ -30,7 +48,7 @@ def flat_mask(target, threshold=0.015):
 class AnimeLoss(nn.Module):
     def __init__(self, pixel=1.0, edge=0.15, high_frequency=0.05, color=0.10,
                  flat=0.08, flat_threshold=0.015, charbonnier_eps=1e-3,
-                 auxiliary_weight=1.0):
+                 auxiliary_weight=1.0, edge_scales=(1.0,)):
         super().__init__()
         if any(x < 0 for x in (pixel, edge, high_frequency, color, flat, auxiliary_weight)):
             raise ValueError("Loss weights must be non-negative")
@@ -38,15 +56,16 @@ class AnimeLoss(nn.Module):
             raise ValueError("pixel, flat_threshold and charbonnier_eps must be positive")
         self.weights = dict(pixel=pixel, edge=edge, high_frequency=high_frequency, color=color, flat=flat)
         self.threshold, self.eps, self.auxiliary_weight = flat_threshold, charbonnier_eps, auxiliary_weight
+        self.edge_scales = tuple(edge_scales)
+        if not self.edge_scales or any(scale not in (1.0, 0.5) for scale in self.edge_scales):
+            raise ValueError("edge_scales must contain 1.0 and/or 0.5")
 
     def components(self, prediction, target, mask):
         error = prediction - target
-        pdx, pdy = gradients(luminance(prediction))
-        tdx, tdy = gradients(luminance(target))
         hp = error - smooth(error)
         return {
             "pixel": (torch.sqrt(error.square() + self.eps ** 2) - self.eps).mean(),
-            "edge": ((pdx - tdx).abs().mean() + (pdy - tdy).abs().mean()) / 2,
+            "edge": multiscale_edge_loss(prediction, target, self.edge_scales),
             "high_frequency": hp.abs().mean(),
             "color": (smooth(smooth(prediction)) - smooth(smooth(target))).abs().mean(),
             # Error high-pass, not TV(prediction): correct target detail is never penalized.

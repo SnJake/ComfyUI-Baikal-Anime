@@ -3,6 +3,7 @@ numpy>=1.24,<3
 Pillow>=10,<13
 PyYAML>=6,<7
 tqdm>=4.66,<5
+safetensors>=0.4
 # Tested on Python 3.10, torch 2.12.1+cu130, RTX 4070 Ti SUPER.
 # Install a CUDA-enabled PyTorch separately if creating a new environment.
 # No torchvision/timm/ComfyUI/perceptual-model downloads are required.
