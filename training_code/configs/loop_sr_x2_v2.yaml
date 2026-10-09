@@ -1,0 +1,96 @@
+model:
+  scale: 2
+  dim: 224
+  heads: 7
+  window: 8
+  pre_blocks: 3
+  loop_blocks: 4
+  post_blocks: 2
+  loops: 4
+  ffn_ratio: 2.0
+  attention: xsa
+  checkpoint_blocks: false
+data:
+  root: data/hr
+  manifest: data/manifests/anime_x2.json
+  patch_size: 192
+  degradation:
+    clean_probability: 0.25
+    blur_probability: 0.25
+    blur_sigma:
+    - 0.2
+    - 1.0
+    resize_probability: 0.3
+    resize_range:
+    - 0.75
+    - 1.25
+    resamplers:
+    - bicubic
+    - bilinear
+    - lanczos
+    noise_probability: 0.3
+    noise_sigma:
+    - 0.2
+    - 3.0
+    jpeg_probability: 0.3
+    jpeg_quality:
+    - 75
+    - 98
+loss:
+  pixel: 1.0
+  edge: 0.2
+  edge_scales:
+  - 1.0
+  - 0.5
+  high_frequency: 0.06
+  color: 0.1
+  flat: 0.08
+  flat_threshold: 0.015
+  charbonnier_eps: 0.001
+  auxiliary_weight: 1.0
+optimizer:
+  lr: 0.0002
+  min_lr: 2.0e-06
+  warmup_steps: 2000
+  weight_decay: 0.0001
+  betas:
+  - 0.9
+  - 0.99
+train:
+  output: runs/baikal_loopsr_x2_v2
+  seed: 2026
+  batch_size: 4
+  accumulation: 4
+  cpu_threads: 6
+  workers: 4
+  prefetch_factor: 2
+  amp: bf16
+  compile:
+    enabled: true
+    backend: inductor
+    mode: default
+    fullgraph: false
+    dynamic: false
+    compile_loss: false
+    fallback_on_error: false
+    cache_dir: .cache/torch_compile
+  max_steps: 40000
+  grad_clip: 1.0
+  ema_decay: 0.999
+  log_every: 50
+  progress: true
+  json_console: false
+  save_every: 500
+  validate_every: 2000
+validation:
+  max_images: 128
+  batch_size: 4
+  modes:
+  - clean
+  - degraded
+  loops:
+  - 1
+  - 2
+  - 3
+  - 4
+  crop_border: 2

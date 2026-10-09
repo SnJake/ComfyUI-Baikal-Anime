@@ -1,8 +1,8 @@
 [project]
 # Immutable Comfy Registry identity; public branding and repository have changed.
 name = "snjake_baikal_swin_anime"
-description = "Baikal anime and illustration upscalers for ComfyUI: LoopSR x2 and SwinFIR v31."
-version = "2.0.0"
+description = "Baikal anime and illustration upscalers for ComfyUI: LoopSR v2, LoopSR v1 and SwinFIR v31."
+version = "2.1.0"
 license = { file = "LICENSE.md" }
 requires-python = ">=3.10"
 dependencies = ["huggingface_hub>=0.26", "safetensors>=0.4"]

@@ -1,12 +1,12 @@
 # Baikal Anime Upscaler
 
-**x2 upscaling for anime and illustrations**, with Baikal LoopSR and SwinFIR v31.
+**x2 upscaling for anime and illustrations**, with Baikal LoopSR v2, LoopSR v1 and SwinFIR v31.
 
-[Download models](https://huggingface.co/SnJake/Baikal-Anime-Upscaler/tree/dev) · [Example workflow](workflows/Baikal_LoopSR_x2.json)
+[Download models](https://huggingface.co/SnJake/Baikal-Anime-Upscaler/tree/dev) · [Example workflow](workflows/Baikal_LoopSR_x2_v2.json)
 
 ## Examples
 
-**Bicubic x2 → Baikal LoopSR x2.** Same display size, no additional sharpening. LoopSR: EMA step 24000, loops 4.
+**Bicubic x2 → Baikal LoopSR v2 x2.** Same display size, no additional sharpening. V2: EMA step 30000, loops 4.
 
 ![Illustration before and after](examples/illustration-overview.webp)
 
@@ -41,7 +41,8 @@ Category **`Baikal/Upscale`**: **Baikal Model Loader → Baikal Anime Upscale �
 
 | Model | File |
 |---|---|
-| Baikal LoopSR x2 | `Baikal_LoopSR_x2.safetensors` |
+| Baikal LoopSR v2 x2 | `Baikal_LoopSR_x2_v2.safetensors` |
+| Baikal LoopSR v1 x2 | `Baikal_LoopSR_x2.safetensors` |
 | Baikal SwinFIR v31 | `Baikal_SwinFIR_Anime_x2_v31.safetensors` |
 
 LoopSR supports **loops 1–4**. Default tiling: **256 / overlap 32 / halo 96** in LR pixels; `tile: 0` attempts a whole-image forward. Precision: auto/BF16/FP16/none, CPU or CUDA. The loader's `UPSCALE_MODEL` output also works with the standard image-upscaling node.
@@ -49,7 +50,7 @@ LoopSR supports **loops 1–4**. Default tiling: **256 / overlap 32 / halo 96** 
 Standalone LoopSR:
 
 ```bash
-python tools/infer.py --weights Baikal_LoopSR_x2.safetensors --input input.png --output output.png
+python tools/infer.py --weights Baikal_LoopSR_x2_v2.safetensors --input input.png --output output.png
 ```
 
 LoopSR adapts shared loops, XSA and deep supervision from [Looped Diffusion Transformer](https://arxiv.org/abs/2609.40305). [Technical notes](docs/TRAINING.md).

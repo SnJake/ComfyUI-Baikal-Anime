@@ -31,7 +31,7 @@ def main():
     with safe_open(args.weights, framework="pt", device="cpu") as handle:
         metadata = handle.metadata() or {}
     if metadata.get("architecture") != "Baikal_LoopSR":
-        raise ValueError("Expected Baikal_LoopSR_x2.safetensors")
+        raise ValueError("Expected an exported Baikal LoopSR safetensors model")
     cfg = json.loads(metadata["model_config"])
     cfg["checkpoint_blocks"] = False
     model = LoopedSR(**cfg)

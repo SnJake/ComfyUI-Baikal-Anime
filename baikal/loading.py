@@ -33,9 +33,9 @@ def resolve_weights(filename):
         result = hf_hub_download(MODEL_REPO, filename=filename, revision="main", local_dir=str(root))
     except EntryNotFoundError:
         # After HF dev is merged, main resolves without a code/config change.
-        if filename != "Baikal_LoopSR_x2.safetensors":
+        if MODELS[filename]["kind"] != "loopsr":
             raise
-        print("[Baikal] LoopSR absent on main; downloading the dev preview.")
+        print(f"[Baikal] {filename} absent on main; downloading the dev preview.")
         result = hf_hub_download(MODEL_REPO, filename=filename, revision="dev", local_dir=str(root))
     return Path(result)
 
